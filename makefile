@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := all
-.PHONY: all release
+.PHONY: all release clean
 TODAY ?=$(shell date +%Y-%m-%d)
 VERSION=v$(TODAY)
 SOURCE_URL=https://icd11files.blob.core.windows.net/tmp/whofic-2023-04-08.owl.gz
@@ -8,8 +8,14 @@ SOURCE_URL=https://icd11files.blob.core.windows.net/tmp/whofic-2023-04-08.owl.gz
 # MAIN COMMANDS / GOALS ------------------------------------------------------------------------------------------------
 all: tmp/output/release/icd11foundation.owl
 
+clean:
+	rm -rf tmp/
+
+tmp/output/release/icd11foundation.owl: tmp/output/intermediate1-unicode-cleaned.owl
+	robot remove --axioms equivalent -i $< -o $@
+
 # Cleans all unicode characters
-tmp/output/release/icd11foundation.owl: tmp/input/source.owl | tmp/output/release/
+tmp/output/intermediate1-unicode-cleaned.owl: tmp/input/source.owl | tmp/output/release/
 	tr -cd '\11\12\15\40-\176' < $< > $@
 
 tmp/output/release/:
