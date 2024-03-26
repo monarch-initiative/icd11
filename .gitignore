@@ -130,3 +130,6 @@ dmypy.json
 
 .idea/
 tmp/
+
+# Custom
+_archive/
