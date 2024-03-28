@@ -26,6 +26,7 @@ tmp/input/:
 
 tmp/input/source.owl: tmp/input/source.gz
 	gunzip -c $< > $@
+	rm $<
 
 tmp/input/source.gz: | tmp/input/
 	wget ${SOURCE_URL} -O $@
@@ -34,6 +35,16 @@ tmp/input/source.gz: | tmp/input/
 release: | tmp/output/release/
 	@test $(VERSION)
 	gh release create $(VERSION) --notes "New release." --title "$(VERSION)" tmp/output/release/*
+
+# Mappings
+tmp/input/mappings.json: | tmp/input/
+	wget -qO tmp/input/en_product1.json.tar.gz https://www.orphadata.com/data/json/en_product1.json.tar.gz
+	tar -xvf tmp/input/en_product1.json.tar.gz -C tmp/input/
+	mv tmp/input/en_product1.json $@
+	rm tmp/input/en_product1.json.tar.gz
+
+tmp/output/release/ordo-icd11.sssom.tsv: tmp/input/mappings.json | tmp/output/release/
+	python3 src/make_sssom.py $< > $@
 
 # HELP -----------------------------------------------------------------------------------------------------------------
 help:
