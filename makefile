@@ -36,15 +36,19 @@ release: | tmp/output/release/
 	@test $(VERSION)
 	gh release create $(VERSION) --notes "New release." --title "$(VERSION)" tmp/output/release/*
 
-# Mappings
-tmp/input/mappings.json: | tmp/input/
-	wget -qO tmp/input/en_product1.json.tar.gz https://www.orphadata.com/data/json/en_product1.json.tar.gz
-	tar -xvf tmp/input/en_product1.json.tar.gz -C tmp/input/
-	mv tmp/input/en_product1.json $@
-	rm tmp/input/en_product1.json.tar.gz
+xxx: tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml
 
-tmp/output/release/ordo-icd11.sssom.tsv: tmp/input/mappings.json | tmp/output/release/
-	python3 src/make_sssom.py $< > $@
+# Mappings
+# todo: Stable URI/filename issue: https://github.com/monarch-initiative/icd11/pull/12#discussion_r1542187711
+tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml: | tmp/input/
+	wget https://www.orphadata.com/data/nomenclature/packs/Orphanet_Nomenclature_Pack_EN.zip -O tmp/input/Orphanet_Nomenclature_Pack_EN.zip
+	unzip tmp/input/Orphanet_Nomenclature_Pack_EN.zip -d tmp/input/Orphanet_Nomenclature_Pack_EN
+
+tmp/input/ordo.owl: | tmp/input/
+	wget http://www.orphadata.org/data/ORDO/ordo_orphanet.owl -O $@
+
+tmp/output/release/ordo-icd11.sssom.tsv: tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml tmp/input/ordo.owl | tmp/output/release/
+	python3 src/mappings.py $< > $@
 
 # HELP -----------------------------------------------------------------------------------------------------------------
 help:
