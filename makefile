@@ -26,6 +26,7 @@ tmp/input/:
 
 tmp/input/source.owl: tmp/input/source.gz
 	gunzip -c $< > $@
+	rm $<
 
 tmp/input/source.gz: | tmp/input/
 	wget ${SOURCE_URL} -O $@
@@ -34,6 +35,20 @@ tmp/input/source.gz: | tmp/input/
 release: | tmp/output/release/
 	@test $(VERSION)
 	gh release create $(VERSION) --notes "New release." --title "$(VERSION)" tmp/output/release/*
+
+xxx: tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml
+
+# Mappings
+# todo: Stable URI/filename issue: https://github.com/monarch-initiative/icd11/pull/12#discussion_r1542187711
+tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml: | tmp/input/
+	wget https://www.orphadata.com/data/nomenclature/packs/Orphanet_Nomenclature_Pack_EN.zip -O tmp/input/Orphanet_Nomenclature_Pack_EN.zip
+	unzip tmp/input/Orphanet_Nomenclature_Pack_EN.zip -d tmp/input/Orphanet_Nomenclature_Pack_EN
+
+tmp/input/ordo.owl: | tmp/input/
+	wget http://www.orphadata.org/data/ORDO/ordo_orphanet.owl -O $@
+
+tmp/output/release/ordo-icd11.sssom.tsv: tmp/input/Orphanet_Nomenclature_Pack_EN/ORPHA_ICD11_mapping_en_newversion_2023.xml tmp/input/ordo.owl | tmp/output/release/
+	python3 src/mappings.py $< > $@
 
 # HELP -----------------------------------------------------------------------------------------------------------------
 help:
